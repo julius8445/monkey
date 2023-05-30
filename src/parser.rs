@@ -23,28 +23,51 @@ impl Parser {
     }
 
     pub fn parse_program(&mut self) -> Option<Program> {
-        let p = Program {
-            statements: vec![
-                Statement::Let(Let {
-                    name: Ident { value: "x".into() },
-                    value: Expression::Ident(Ident { value: "x".into() }),
-                }),
-                Statement::Let(Let {
-                    name: Ident { value: "y".into() },
-                    value: Expression::Ident(Ident { value: "x".into() }),
-                }),
-                /*Statement::Return(Return {
-                    value: Expression::Ident(Ident { value: "x".into() }),
-                }),*/
-                Statement::Let(Let {
-                    name: Ident {
-                        value: "foobar".into(),
-                    },
-                    value: Expression::Ident(Ident { value: "x".into() }),
-                }),
-            ],
+        let mut p = Program {
+            statements: Vec::new(),
         };
+
+        while !self.is_token(Token::Eof) {
+            let stmt = self.parse_statement();
+            if let Some(x) = stmt {
+                p.statements.push(x);
+            }
+            self.next_token();
+        }
+
+        Some(p)
+    }
+
+    fn parse_statement(&mut self) -> Option<Statement> {
+        match self.current_token {
+            Token::Let => self.parse_let_statement().map(|x| Statement::Let(x)),
+            Token::Return => self.parse_return_statement().map(|x| Statement::Return(x)),
+            _ => None,
+        }
+    }
+
+    fn parse_let_statement(&mut self) -> Option<Let> {
+        if !self.expect_peek(Token::Ident("".into())) {
+            None
+        } else {
+            None
+        }
+    }
+
+    fn parse_return_statement(&mut self) -> Option<Return> {
         None
+    }
+
+    fn is_token(&self, tok: Token) -> bool {
+        self.peek_token.variant_eq(&tok)
+    }
+
+    fn is_peek_token(&self, tok: Token) -> bool {
+        self.peek_token.variant_eq(&tok)
+    }
+
+    fn expect_peek(&self, tok: Token) -> bool {
+        self.peek_token.variant_eq(&tok)
     }
 
     fn next_token(&mut self) {

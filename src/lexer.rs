@@ -29,6 +29,12 @@ pub enum Token {
     Return,
 }
 
+impl Token {
+    pub fn variant_eq(&self, tok: &Token) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(tok)
+    }
+}
+
 #[derive(Debug)]
 pub struct Lexer {
     ch: u8,
@@ -157,6 +163,16 @@ impl Lexer {
 #[cfg(test)]
 mod test {
     use super::{Lexer, Token};
+
+    #[test]
+    fn token_variant_equality() {
+        let a = Token::Ident("y".into());
+        let b = Token::Ident("x".into());
+        let c = Token::Int("14".into());
+
+        assert_eq!(a.variant_eq(&b), true);
+        assert_eq!(a.variant_eq(&c), false);
+    }
 
     #[test]
     fn get_next_token() {
