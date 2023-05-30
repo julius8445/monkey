@@ -11,13 +11,13 @@ pub enum Statement {
 
 #[derive(Debug)]
 pub struct Let {
-    pub ident: Ident,
+    pub name: Ident,
     pub value: Expression,
 }
 
 #[derive(Debug)]
 pub struct Return {
-    pub return_value: Expression,
+    pub value: Expression,
 }
 
 #[derive(Debug)]
