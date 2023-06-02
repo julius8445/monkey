@@ -4,14 +4,14 @@ use std::mem;
 use crate::ast::*;
 use crate::lexer::{Lexer, Token, TokenKind};
 
+type InfixParser = fn() -> Expression;
+type PrefixParser = fn(Expression) -> Expression;
+
 #[derive(Debug, thiserror::Error)]
 pub enum ParserError {
     #[error("expected next token to be {0:?}, got {1:?} instead")]
     UnexpectedToken(TokenKind, Token),
 }
-
-type InfixParser = fn() -> Expression;
-type PrefixParser = fn(Expression) -> Expression;
 
 #[derive(Debug)]
 pub struct Parser {
@@ -42,8 +42,7 @@ impl Parser {
         };
 
         while !self.is_token(TokenKind::Eof) {
-            let stmt = self.parse_statement();
-            if let Some(x) = stmt {
+            if let Some(x) = self.parse_statement() {
                 p.statements.push(x);
             }
             self.next_token();
@@ -56,7 +55,9 @@ impl Parser {
         match self.current_token {
             Token::Let => self.parse_let_statement().map(|x| Statement::Let(x)),
             Token::Return => self.parse_return_statement().map(|x| Statement::Return(x)),
-            _ => None,
+            _ => self
+                .parse_expression_statement()
+                .map(|x| Statement::ExpressionStatement(x)),
         }
     }
 
@@ -65,17 +66,15 @@ impl Parser {
             return None;
         }
 
-        let name = if let Token::Ident(s) = &self.current_token {
-            Ident { value: s.clone() }
-        } else {
-            return None;
+        let name = Ident {
+            value: self.current_token.to_string(),
         };
 
         if !self.expect(TokenKind::Assign) {
             return None;
         }
 
-        let value = Expression::Ident(Ident { value: " ".into() });
+        let value = Expression::Ident(name.clone());
 
         while !self.is_token(TokenKind::Semicolon) {
             self.next_token();
@@ -96,9 +95,29 @@ impl Parser {
         Some(Return { value })
     }
 
+    fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
+        if self.is_peek_token(TokenKind::Semicolon) {
+            self.next_token();
+        }
+
+        None
+    }
+
+    fn parse_expression(&mut self, p: Precedence) -> Option<Expression> {
+        None
+    }
+
     fn next_token(&mut self) {
         self.current_token = mem::replace(&mut self.peek_token, Token::Eof);
         self.peek_token = self.lexer.next().unwrap();
+    }
+
+    fn register_infix(&mut self, tok: TokenKind, p: InfixParser) {
+        self.infix_parsers.insert(tok, p);
+    }
+
+    fn register_prefix(&mut self, tok: TokenKind, p: PrefixParser) {
+        self.prefix_parsers.insert(tok, p);
     }
 
     fn is_token(&self, tok: TokenKind) -> bool {
@@ -116,14 +135,6 @@ impl Parser {
         } else {
             false
         }
-    }
-
-    fn register_infix(&mut self, tok: TokenKind, p: InfixParser) {
-        self.infix_parsers.insert(tok, p);
-    }
-
-    fn register_prefix(&mut self, tok: TokenKind, p: PrefixParser) {
-        self.prefix_parsers.insert(tok, p);
     }
 }
 

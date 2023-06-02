@@ -1,5 +1,15 @@
 #[derive(Debug, PartialEq, Eq)]
+pub enum Precedence {
+    Lowest = 1,
+    Equals,
+    LessGreater,
+    Sum,
+    Product,
+    Prefix,
+    Call,
+}
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
@@ -32,7 +42,7 @@ pub enum Expression {
     Ident(Ident),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ident {
     pub value: String,
 }

@@ -98,6 +98,42 @@ impl Token {
     }
 }
 
+impl ToString for Token {
+    fn to_string(&self) -> String {
+        let mut result = String::new();
+        match self {
+            Token::Illegal(s) => result.push_str(s),
+            Token::Eof => result.push_str("\0"),
+            Token::Ident(s) => result.push_str(s),
+            Token::Int(s) => result.push_str(s),
+            Token::Assign => result.push_str("="),
+            Token::Plus => result.push_str("+"),
+            Token::Minus => result.push_str("-"),
+            Token::Bang => result.push_str("!"),
+            Token::Asterisk => result.push_str("*"),
+            Token::Slash => result.push_str("/"),
+            Token::Lt => result.push_str("<"),
+            Token::Gt => result.push_str(">"),
+            Token::Eq => result.push_str("=="),
+            Token::NotEq => result.push_str("!="),
+            Token::Comma => result.push_str(","),
+            Token::Semicolon => result.push_str(";"),
+            Token::Lparen => result.push_str("("),
+            Token::Rparen => result.push_str(")"),
+            Token::Lbrace => result.push_str("{"),
+            Token::Rbrace => result.push_str("}"),
+            Token::Function => result.push_str("fn"),
+            Token::Let => result.push_str("let"),
+            Token::True => result.push_str("true"),
+            Token::False => result.push_str("false"),
+            Token::If => result.push_str("if"),
+            Token::Else => result.push_str("else"),
+            Token::Return => result.push_str("return"),
+        }
+        result
+    }
+}
+
 #[derive(Debug)]
 pub struct Lexer {
     ch: u8,
