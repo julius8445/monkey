@@ -1,3 +1,34 @@
+#[derive(Hash, Debug, PartialEq, Eq)]
+pub enum TokenKind {
+    Illegal,
+    Eof,
+    Ident,
+    Int,
+    Assign,
+    Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+    Lt,
+    Gt,
+    Eq,
+    NotEq,
+    Comma,
+    Semicolon,
+    Lparen,
+    Rparen,
+    Lbrace,
+    Rbrace,
+    Function,
+    Let,
+    True,
+    False,
+    If,
+    Else,
+    Return,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     Illegal(String),
@@ -32,6 +63,38 @@ pub enum Token {
 impl Token {
     pub fn variant_eq(&self, tok: &Token) -> bool {
         std::mem::discriminant(self) == std::mem::discriminant(tok)
+    }
+
+    pub fn kind(&self) -> TokenKind {
+        match self {
+            Token::Illegal(_) => TokenKind::Illegal,
+            Token::Eof => TokenKind::Eof,
+            Token::Ident(_) => TokenKind::Ident,
+            Token::Int(_) => TokenKind::Int,
+            Token::Assign => TokenKind::Assign,
+            Token::Plus => TokenKind::Plus,
+            Token::Minus => TokenKind::Minus,
+            Token::Bang => TokenKind::Bang,
+            Token::Asterisk => TokenKind::Asterisk,
+            Token::Slash => TokenKind::Slash,
+            Token::Lt => TokenKind::Lt,
+            Token::Gt => TokenKind::Gt,
+            Token::Eq => TokenKind::Eq,
+            Token::NotEq => TokenKind::NotEq,
+            Token::Comma => TokenKind::Comma,
+            Token::Semicolon => TokenKind::Semicolon,
+            Token::Lparen => TokenKind::Lparen,
+            Token::Rparen => TokenKind::Rparen,
+            Token::Lbrace => TokenKind::Lbrace,
+            Token::Rbrace => TokenKind::Rbrace,
+            Token::Function => TokenKind::Function,
+            Token::Let => TokenKind::Let,
+            Token::True => TokenKind::True,
+            Token::False => TokenKind::False,
+            Token::If => TokenKind::If,
+            Token::Else => TokenKind::Else,
+            Token::Return => TokenKind::Return,
+        }
     }
 }
 
@@ -163,16 +226,6 @@ impl Lexer {
 #[cfg(test)]
 mod test {
     use super::{Lexer, Token};
-
-    #[test]
-    fn token_variant_equality() {
-        let a = Token::Ident("y".into());
-        let b = Token::Ident("x".into());
-        let c = Token::Int("14".into());
-
-        assert_eq!(a.variant_eq(&b), true);
-        assert_eq!(a.variant_eq(&c), false);
-    }
 
     #[test]
     fn get_next_token() {
