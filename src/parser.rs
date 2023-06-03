@@ -53,11 +53,18 @@ impl Parser {
 
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.current_token {
-            Token::Let => self.parse_let_statement().map(|x| Statement::Let(x)),
-            Token::Return => self.parse_return_statement().map(|x| Statement::Return(x)),
-            _ => self
-                .parse_expression_statement()
-                .map(|x| Statement::ExpressionStatement(x)),
+            Token::Let => {
+                self.parse_let_statement()
+                    .map(|x| Statement::Let(x))
+            }
+            Token::Return => {
+                self.parse_return_statement()
+                    .map(|x| Statement::Return(x))
+            }
+            _ => {
+                self.parse_expression_statement()
+                    .map(|x| Statement::ExpressionStatement(x))
+            }
         }
     }
 
@@ -112,14 +119,6 @@ impl Parser {
         self.peek_token = self.lexer.next().unwrap();
     }
 
-    fn register_infix(&mut self, tok: TokenKind, p: InfixParser) {
-        self.infix_parsers.insert(tok, p);
-    }
-
-    fn register_prefix(&mut self, tok: TokenKind, p: PrefixParser) {
-        self.prefix_parsers.insert(tok, p);
-    }
-
     fn is_token(&self, tok: TokenKind) -> bool {
         self.current_token.kind() == tok
     }
@@ -135,6 +134,14 @@ impl Parser {
         } else {
             false
         }
+    }
+
+    fn register_infix(&mut self, tok: TokenKind, p: InfixParser) {
+        self.infix_parsers.insert(tok, p);
+    }
+
+    fn register_prefix(&mut self, tok: TokenKind, p: PrefixParser) {
+        self.prefix_parsers.insert(tok, p);
     }
 }
 
@@ -178,7 +185,7 @@ mod test {
         ";
 
         let mut p = Parser::new(Lexer::new(input.into()));
-        let program = p.parse_program().expect("parser should produce valid ast");
+        let program = p.parse_program().expect("parser should produce valid ast.");
 
         assert_eq!(program.statements.len(), 3);
 
@@ -186,6 +193,26 @@ mod test {
             println!("{stmt:?}");
             let Statement::Return(_) = stmt else {
                 panic!("expected return statement. Found {stmt:?}");
+            };
+        }
+    }
+
+    #[test]
+    fn test_expression_statements() {
+        let input = "
+            foobar;
+            input;
+        ";
+
+        let mut p = Parser::new(Lexer::new(input.into()));
+        let program = p.parse_program().expect("parser should produce valid ast");
+
+        assert_eq!(program.statements.len(), 2);
+
+        for stmt in program.statements.iter() {
+            println!("{stmt:?}");
+            let Statement::ExpressionStatement(_) = stmt else {
+                panic!("expected expression statement. Found {stmt:?}");
             };
         }
     }
