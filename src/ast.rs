@@ -40,9 +40,15 @@ pub struct ExpressionStatement {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Expression {
     Ident(Ident),
+    IntegerLiteral(IntegerLiteral),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ident {
     pub value: String,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct IntegerLiteral {
+    pub value: u64,
 }
