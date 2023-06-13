@@ -10,6 +10,12 @@ pub enum Precedence {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub enum Operator {
+    Bang,
+    Minus,    
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
@@ -19,6 +25,13 @@ pub enum Statement {
     Let(Let),
     Return(Return),
     ExpressionStatement(ExpressionStatement),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Expression {
+    Ident(Ident),
+    IntegerLiteral(IntegerLiteral),
+    Prefix(Prefix),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -37,12 +50,6 @@ pub struct ExpressionStatement {
     pub value: Expression,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Expression {
-    Ident(Ident),
-    IntegerLiteral(IntegerLiteral),
-}
-
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Ident {
     pub value: String,
@@ -51,4 +58,10 @@ pub struct Ident {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct IntegerLiteral {
     pub value: u64,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Prefix {
+    pub operator: Operator,
+    pub right: Box<Expression>,
 }

@@ -11,6 +11,7 @@ Feel free to type in commands\
 
 fn prompt() -> String {
     let mut input = String::new();
+    
     print!("{}", PROMPT_STRING);
     io::stdout().flush().unwrap();
     io::stdin().read_line(&mut input).unwrap();
@@ -18,11 +19,11 @@ fn prompt() -> String {
     input.trim().to_string()
 }
 
-fn start() -> io::Result<()> {
+fn main() -> io::Result<()> {
     println!("{}", WELCOME_TEXT);
     loop {
         let input = prompt();
-
+        
         match input.as_str() {
             ":exit" => break,
             _ => {
@@ -30,7 +31,7 @@ fn start() -> io::Result<()> {
                 for token in l {
                     if token == Token::Eof {
                         break;
-                    }
+                    }                    
                     println!("Token: {token:?}");
                 }
             }
@@ -38,8 +39,4 @@ fn start() -> io::Result<()> {
     }
 
     Ok(())
-}
-
-fn main() -> io::Result<()> {
-    return start();
 }

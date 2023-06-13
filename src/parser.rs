@@ -1,17 +1,11 @@
-use std::collections::HashMap;
 use std::mem;
+use std::collections::HashMap;
 
 use crate::ast::*;
 use crate::lexer::{Lexer, Token, TokenKind};
 
 type InfixParser = fn(&mut Parser, Expression) -> Option<Expression>;
 type PrefixParser = fn(&mut Parser) -> Expression;
-
-#[derive(Debug, thiserror::Error)]
-pub enum ParserError {
-    #[error("expected next token to be {0:?}, got {1:?} instead")]
-    UnexpectedToken(TokenKind, Token),
-}
 
 #[derive(Debug)]
 pub struct Parser {
@@ -31,8 +25,10 @@ impl Parser {
             infix_parsers: HashMap::new(),
             prefix_parsers: HashMap::new(),
         };
+        
+        p.register_prefix(TokenKind::Int, Parser::parse_integer_literal);
         p.register_prefix(TokenKind::Ident, Parser::parse_identifier);
-        p.register_prefix(TokenKind::Ident, Parser::parse_integer_literal);
+        
         p.next_token();
         p.next_token();
         p
@@ -56,16 +52,19 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         match self.current_token {
             Token::Let => {
-                self.parse_let_statement()
-                    .map(|x| Statement::Let(x))
+                self
+                .parse_let_statement()
+                .map(|x| Statement::Let(x))
             }
             Token::Return => {
-                self.parse_return_statement()
-                    .map(|x| Statement::Return(x))
+                self
+                .parse_return_statement()
+                .map(|x| Statement::Return(x))
             }
             _ => {
-                self.parse_expression_statement()
-                    .map(|x| Statement::ExpressionStatement(x))
+                self
+                .parse_expression_statement()
+                .map(|x| Statement::ExpressionStatement(x))
             }
         }
     }
@@ -117,7 +116,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self, p: Precedence) -> Option<Expression> {
-        let prefix = self.prefix_parsers.get(&TokenKind::Ident);
+        let prefix = self.prefix_parsers.get(&self.current_token.kind());
 
         if let Some(f) = prefix {
             Some(f(self))
@@ -132,6 +131,7 @@ impl Parser {
 
     fn parse_integer_literal(&mut self) -> Expression {
         let value = self.current_token.to_string().parse::<u64>().unwrap();
+        
         Expression::IntegerLiteral(IntegerLiteral { value })
     }
 
@@ -166,12 +166,13 @@ impl Parser {
     }
 }
 
+
 #[cfg(test)]
 mod test {
     use super::Parser;
     use crate::ast::{
         Statement,
-        Expression,
+        Expression, Let, Ident,
     };
     use crate::lexer::Lexer;
 
@@ -193,6 +194,7 @@ mod test {
 
         for (i, stmt) in program.statements.iter().enumerate() {
             println!("{stmt:?}");
+            
             let Statement::Let(s) = stmt else {
                 panic!("expected let statement. Found {stmt:?}");
             };
@@ -215,6 +217,7 @@ mod test {
 
         for stmt in program.statements.iter() {
             println!("{stmt:?}");
+            
             let Statement::Return(_) = stmt else {
                 panic!("expected return statement. Found {stmt:?}");
             };
@@ -222,7 +225,7 @@ mod test {
     }
 
     #[test]
-    fn test_expression_statements() {
+    fn test_identifier_expressions() {
         let input = "
             foobar;
             input
@@ -230,22 +233,54 @@ mod test {
         
         let identifiers = vec!["foobar", "input"];
 
-        let mut p = Parser::new(Lexer::new(input.into()));
-        let program = p.parse_program().expect("parser should produce valid ast");
-
-        assert_eq!(program.statements.len(), 2);
+        let mut _l = Lexer::new(input.into());
+        let mut _p = Parser::new(_l);
+        let program = _p.parse_program().expect("parser should produce valid ast");
+        
+        assert_eq!(program.statements.len(), identifiers.len());
 
         for (i, stmt) in program.statements.iter().enumerate() {
             println!("{stmt:?}");
+
             let Statement::ExpressionStatement(s) = stmt else {
                 panic!("expected expression statement. Found {stmt:?}");
             };
 
-            let Expression::Ident(x) = &s.value else {
-                panic!("expected identifier expression. found {s:?}");
+            let Expression::Ident(ref x) = s.value else {
+                panic!("expected identifier. found {s:?}");
             };
 
             assert_eq!(x.value, identifiers[i]);
+        }
+    }
+
+    #[test]
+    fn test_integer_literal_expressions() {
+        let input = "
+            65;
+            4
+            75;
+        ";
+        
+        let numbers = vec![65, 4, 75];
+
+        let mut p = Parser::new(Lexer::new(input.into()));
+        let program = p.parse_program().expect("parser should produce valid ast");
+        
+        assert_eq!(program.statements.len(), numbers.len());
+
+        for (i, stmt) in program.statements.iter().enumerate() {
+            println!("{stmt:?}");
+            
+            let Statement::ExpressionStatement(s) = stmt else {
+                panic!("expected expression statement. Found {stmt:?}");
+            };
+
+            let Expression::IntegerLiteral(ref x) = s.value else {
+                panic!("expected integer literal. found {s:?}");
+            };
+
+            assert_eq!(x.value, numbers[i]);
         }
     }
 }
